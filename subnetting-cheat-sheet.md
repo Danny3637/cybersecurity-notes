@@ -1,6 +1,4 @@
 SUBNETTING CHEAT SHEET
-> Week 01 deliverable · [[Week 01]] · [[Roadmap]]
-> Covers: CIDR table · special ranges · magic number method · 3 worked examples · common ports
 
                                                                                             1. Basics:
                                                                                         
@@ -271,7 +269,7 @@ TCP vs UDP
 TCP
   - Reliable
   - Handshake first:
-      SYN -> SYN -> ACK -> ACK
+      SYN -> SYN/ACK -> ACK
   - Web
   - SSH
   - Email
