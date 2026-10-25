@@ -247,19 +247,3 @@ ip.addr == 192.168.1.20 |  Traffic to/from one host
 tcp.port == 443         |  HTTPS traffic
 
 Full ports table with/insecure versions is in the Subbnetting Cheat Sheet. 
-
-
-                                                                                  End of the week test:
-Questions                                                            |  Answers
-Which OSI layer do routers work at, and what address do they use?    |  Layer 3 (NEtwork), IP addresses
-Whats the PDU at Layer 2?                                            |  Frame
-Put the TCP handshake in order                                       |  SYN -> SYN/ACK -> ACK
-Name two things that use UDP                                         |  Any two of: DNS queries, DHCP, NTP, streaming, VoIP, gmaing
-A PC shows 169.254.12.4. Whats Wrong?                                |  APIPA: DHCP failed. Check cable/Wi-Fi/DHCP server
-What does DORA stand for?                                            |  Discover, Offer, Request, Acknowledge
-Conver 224 to binary                                                 |  1110 0000
-Is 172.30.5.1 public or private?                                     |  Private (172.16-172.31)
-Network and broadcast for 10.0.0.45/28                               |  Magic 16 -> network 10.0.0.32, broadcast 10.0.0.47
-Which DNS record points to a mail server?                            |  MX
-Which port is RDP, and why is it a risk?                             |  3389. Exposed RDP is a top target for brute force and ransomware
-What's the difference between a hub and a switch?                    |  Hub (L1) repeats to all ports; switch (L2) sens to the riight port by MAC.
