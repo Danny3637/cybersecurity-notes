@@ -1,0 +1,265 @@
+Week 1 - Networking Lessons Summary
+
+
+    Session        |                                                What was covered                                     |                  Resources
+Tue - 1            |  What a network is, the 7 OSI layers, LANs topologies, ARP, DHCP                                    |  ProfessorMesser: Understanding the OSI Model, THM: What is Networking?, Intro to LAN
+Tue - 2            |  Packets & frames, encapsulation, TCP handshake, UDP, network devices                               |  THM: OSI Model, Packets & Frmes, ProfessorMesser: Networking Devices
+Thu - 3            |  Binary, IPv4 addressing, subnet masks, CIDR, private/special ranges                                |  ProfessorMesser: Binary Math, Introduction to IP, IPv4 Addressing, IPv4 Subnet Masks
+Thu - 4            |  Calculating subnets & hosts, magic number method, common ports                                     |  ProfessorMesser: Claculating IPv4 Subnets and Hosts, Magic Number Subnetting, Common Ports (subnettingpractice.com)
+Sat - Lab          |  Port fortwarding, firewalls, VPN's, VLAN's, Seven-second subnetting, DNS, first Wireshark capture  |  THM: Extending Your Network, DNS in Detail, ProfessorMesser: Seven Second subneting, An Overview of DNS
+
+
+                                                                              The OSI and TCP/IP models
+
+OSI model splits networking into layers. each layer is able to communicate only with the level above or below it. This allows for easy troubleshooting (" Is it a problem with a cable (L1)
+or a DNS issue (L7)?").
+
+OSI model (7 layers):
+     No      |  Layer        |              Job                |           Protocols/Examples        |    Data unit (PDU)  |    Devices
+      7      |  Application  | what the user's apps talk to    |    HTTP/S, DNS, FTP, SMTP, SSH      |    Data             |  (L7 firewall, proxy)
+      6      |  Presentation | format, encrypt, compress       |    TLS/SSL, JPEG, ASCII             |    Data             |  -
+      5      |  Session      | open, manage, close sessions    |    NetBIOS, RPC                     |    Data             |  -
+      4      |  Transport    | ports, TCP/UDP, reliability     |    TCP, UDP                         |    Segment/datagram |  (stateful firewall)
+      3      |  Network      | IP addresses, frames            |    IP, ICMP (ping)                  |    Packet           |  Router, L3 switch
+      2      |  Data Link    | MAC addresses, frames           |    Ethernet, Wi-Fi(802.11), ARP     |    Frame            |  Switch, bridge, NIC, AP
+      1      |  Physical     | bits on cable / radio           |    Cables, fibre, radio, signals    |    Bits             |  Hub, repeater, cables
+
+TCP/IP model (4 layers) is what the internet actually runs on. OSI is the 7-layer "teaching" model used in exams and troubleshooting.
+
+                                                                                    Encapsulation
+Encapsulation is how data gets wrapped n the way down:
+L7-5 Data              [---------------------------------------DATA---------------------------------------]
+L4 Segment             [--TCP/UDP hdr ports--][--------------------------DATA-----------------------------]
+L3 Packet              [--IP hdr IPs--][--TCP/UDP hdr--][---------------------DATA------------------------]
+L2 Frame               [--Eth hdr MACs--][--IP hdr IPs--][--TCP/UDP hdr--][-----DATA-----][--FCS trailer--]
+L1 Bits                [----------------------------0110100101001011010010110..---------------------------]
+Sending = encapsulation (add a header at each layer going down).
+Recieving = de-encapsulation  (strip them off goign up).
+
+
+                                                                              LANs, topologies and devices
+
+
+A LAN (Local Area Network) is a network in one place, like a home or an office.
+A WAN (Wide Area Network) connects LANs over long distances (the internet is the biggest WAN)
+
+Star - every device plugs into a central switch. Most common. easy to add devices; if the switch dies, everything stops
+Bus - everything shares one backbone cable. Cheap, but traffic jams and one break takes the network down.
+Ring - each device links to the next; data goes one way round. Little cabling, but one break or faulty device stops the loop.
+
+       Device        |  OSI layer  |                                  What it does
+  Hub                |      1      |  Repeats every signal out of every port. Dumb, insecure (everyone sees everything), obsolete
+  Switch             |      2      |  Learns MAC addresses and send frames only to the right port. Can split a LAN into VLANs.
+  Router             |      3      |  Connects different networks and picks the path using IP addresses. Your home router is also your default gateway.
+  Firewall           |     3-7     |  Allows or blocks traffic based on the rules (IP, port, protocol, app)
+  Access point (AP)  |      2      |  Bridges Wi-Fi devices onto the wired LAN.
+  NIC                |     1-2     |  Network card in each device; has a burned-in MAC address (48 bits, e.g. a4:83:e7:2b:10:9f).
+  Load balancer      |     4-7     |  Spreads traffic across several servers so none is overloaded.
+
+
+                                                                      Packets, TCP and UDP
+
+              |                      TCP                      |          UDP            
+Conncetion    |  Yes (handshake first)                        |  No
+Reliable?     |  Yes: numbered, acknowledged, resent if lost  |  No: fire and forget
+Order         |  Guaranteed                                   |  Not guaranteed
+Speed         |  Slower (more overhead)                       |  Faster, lighter
+Used for      |  Web, email, SSH, file transfer               |  DNS queries, DHCP, streaming,  VoIP, gaming
+
+3-way handshake
+
+1. Client sends SYN request to server
+2. Server replies with SYN/ACK
+3. Client replies wiht ACK
+
+Closing uses FIN/ACK
+RST kills a connection abruptly
+
+TCP flag      |      Meaning
+SYN           |  Start a connection (synchronise sequence numbers)
+ACK           |  Acknowledge data recieved
+FIN           |  Finished: close the connection politely
+RST           |  Reset: close it immediately (often a closed port answering a scan)
+PSH/URG       |  Push data to the app now / urgent data
+
+--------------------------------------------------------------------------------
+Security angle
+Port scanners line NMAP send SYNs and read the reply: 
+SYN/ACK = Port open
+RST = closed
+nothing = filtered by firewall
+A SYN flood sends thousands of SYNs and never Acks, to fill uo the server.
+--------------------------------------------------------------------------------
+
+
+                                                                                        ARP and DHCP
+
+
+ARP: IP -> MAC (Layer 2/3)
+On a LAN, frames are delivered by MAC address, so a device needs the MAC that matches and IP.
+  1. Request (broadcast to everyone): "Who has 192.168.1.1? Tell 192.168.1.20."
+  2. Reply (unicast): "192.168.1.1 is at a4:83:e7:2b:1-:9f."
+  3. The answer is saved in ARP cache (see it with arp -a).
+-----------------------------------------------------------------------------------------------------------------------------
+Security:
+ARP has no authentication, so an attacker can send fake replies (ARP spoofing / poisoning) to sit in the middle of traffic.
+-----------------------------------------------------------------------------------------------------------------------------
+
+DHCP: automatic IP settings (UDP 67/68)
+Remember it as DORA:
+Step  |          Who          |        Message
+  D   |  Client -> all        |  Discover: "Any DHCP servers?"
+  O   |  Server -> client     |  Offer: "You can have .25"
+  R   |  Client -> all        |  Request: I'll take .25"
+  A   |  Server -> client     |  Acknowledge: "It's yours"
+Gives:
+IP address, subnet mask, default gateway, DNS server, lease time.
+No answer -> the device gives itself an APIPA address (169.254.x.x).
+
+
+                                                                          Binary and IPv4 addressing
+
+
+Each octet is 8 bits. Every bit has a place value; add up the ones that are switched on.
+
+Place value    |  128  |  64  |  32  |  16  |  8  |  4  |  2  |  1  |        =Decimal
+    192        |   1   |   1  |   0  |   0  |  0  |  0  |  0  |  0  |        128+64=192
+    168        |   1   |   0  |   1  |   0  |  1  |  0  |  0  |  0  |        128+32+8=168
+    172        |   1   |   0  |   1  |   0  |  1  |  1  |  0  |  0  |        128+32+8+4=172
+    10         |   0   |   0  |   0  |   0  |  1  |  0  |  1  |  0  |        8+2=10
+    255        |   1   |   1  |   1  |   1  |  1  |  1  |  1  |  1  |        all on = 255
+Decimal -> binary: start at 128. If the number is more or equal the place value, write 1 and subtract; otherwise write 0. Move right and repeat.
+
+- IPv4 = 32 bits, 4 octets ~4.3 billion addresses (not enough, hence NAT and IPv6)
+- Subnet mask = which bits are network vs host. 255.255.255.0 = /24 (CIDR notation counts are 1-bits)
+- Default gateway = the router's IP; where traffic goes when the destination is outside your subnet.
+- NAT = the router swaps private IPs for tis one public IP on the way out.
+- Unicast: one-to-one
+- Broadcast: one-to-all on the subnet
+- Multicast: one-to-a-group
+
+Special range    |          CIDR          |      USE
+Private A        |  10.0.0.0/8            |  Internal
+Private B        |  172.16.0.0/12         |  Internal (172.16-32)
+Private C        |  192.168.0.0/16        |  Internal
+Loopback         |  127.0.0.0/8           |  Own machine
+APIPA            |  169.254.0.0/16        |  DHCP failed
+
+Old address classes (stil asked in exams)
+
+Class    |    First octet    |        Default mask          |                USE
+  A      |      1 - 126      |    /8 (255.0.0.0)            |  Very large networks
+  B      |     128 - 191     |    /16 (255.255.0.0)         |  Medium networks
+  C      |     192 - 223     |    /24 (255.255.255.0)       |  Small networks
+  D      |     224 - 239     |              -               |  Multicast
+  E      |     240 - 255     |              -               |  Experimental / reserved
+127 is missing from Class A because it's reserved for loopback. Modern networks use CIDR instead of classes.
+
+
+                                                                                      Subnetting (Short)
+
+
+Full dtails are located in subnetting cheat sheet. The essentials:
+
+Formula          |  Meaning                              |              Magic number in 5 steps
+32 - prefix      |  Host bits                            |  1. Find the interesting octet (mask is not 255/00)
+2^host bits - 2  |  Usable hosts                         |  2. Magic number = 256 - mask value
+2^subnet bits    |  Number of subnets                    |  3. Network = biggest multiple ≤ the IP's octet.
+256 - mask value |  Magic number (block size)            |  4. Broadcast = next multiple -1
+/25  |  /26  |  /27  |  /28  |  /29  |  /30              |  5. Hosts = Network +1 to broadcast -1
+128  |  192  |  224  |  240  |  248  |  252              |  Example: 192.168.10.77/27 -> magic = 32 -> network .64, broadcast .95, hosts .65-.94 (30)
+126h |  62h  |  30h  |  14h  |  6h   |  2h               
+
+
+                                                                                Extending your network
+
+
+  Concept          |   What it is                                                                                                      |  Example
+Port forwarding    |  The router sends traffic arriving on a public port to a specific internal device and port                        |  public :80 -> 192.168.1.10:80 to host a web server at home. Opens a door fromt he internet, so only forward what you need
+Firewall           |  Checks traffic against rules: where from, where to, which port, which protocol, Allow or deny                    |  Hardware (a box on the network) or software (Windows Defender Firewall, iptables).
+VPN                |  An encrypted tunnel across an untrusted network (the internet), so remote devices act an if they're on the LAN.  |  Site-to-site (Office <-> office) or remote access (laptop <-> office). Protocols: IPsec, OpenVPN, WireGuard; old PPTP is insecure.
+VLAN               |  Splits one physical switch into separate virtual LANs that can't talk without a router/firewall                  |  Guests, staff and server on different VLANs = segmentation, which limits how far an attacker can move.
+
+  Stateless firewall                                |  Stateful firewall
+Checks each packet on its own against the rules     |  Tracks whole connections (rememembers the handshake)
+Fast, uses fewer resources                          |  Smarter: auto-allows replies to connections you started 
+Easier to fool; good against floods of junk         |  Uses more resources; the cormal choice today
+
+
+                                                                        DNS: the internet's phonebook (port 53)
+
+
+DNS turnns names (www.example.com) into IP addresses. The namespace is a tree, read right to left:
+    www      |        example        |    .com      |      .        
+  subdomain  |  second-level domain  |     TLD      |    root
+
+How a lookup looks:                                                              
+                        1                       2  Root server                  
+                       -->                      /  3                            
+Your PC (checks cache)      Recursive resolver    -  .com TLD                  
+                       <--                      \                               
+                        5                       4  Authoritative (example.com)  
+
+1. PC asks its resolver (ISP/router/8.8.8.8)
+2. root says "ask .com"
+3. TLD says "ask example.com's server"
+4. authoritative server gives the IP
+5. answer returned and cached for its TTL
+
+|      Record      |  Holds
+|  A               |  IPv4 address
+|  AAAA            |  IPv6 address
+|  CNAME           |  Alias to another name
+|  MX              |  Mail server for the domain (with priority)
+|  TXT             |  Free text: SPF/DKIM, domain verifiication
+|  NS              |  Which servers are authoritative
+|  PTR             |  Reverse lookup: IP -> name
+
+Try it:
+nslookup example.com (Windows)
+dig example.com (Linux)
+DNS uses UDP 54 for normal queries, TCP 53 for big repies and zone transfers.
+
+
+                                                                Ports to know + first Wireshark filters
+
+
+Port     |    Service    
+20/21    |    FTP
+22       |    SSH
+23       |    Telnet
+25       |    SMTP
+53       |    DNS
+67/68    |    DHCP
+110      |    POP3
+143      |    IMAP
+443      |    HTTPS
+445      |    SMB
+3389     |    RDP
+80       |    HTTP
+
+Wireshark filter        |  Shows
+dns                     |  DNS queries and responses
+tcp.flags.syn == 1      |  Handshake SYN and SYN/ACK packets
+arp                     |  ARP requests and replies
+dhcp                    |  DORA messages
+ip.addr == 192.168.1.20 |  Traffic to/from one host
+tcp.port == 443         |  HTTPS traffic
+
+Full ports table with/insecure versions is in the Subbnetting Cheat Sheet. 
+
+
+                                                                                  End of the week test:
+Questions                                                            |  Answers
+Which OSI layer do routers work at, and what address do they use?    |  Layer 3 (NEtwork), IP addresses
+Whats the PDU at Layer 2?                                            |  Frame
+Put the TCP handshake in order                                       |  SYN -> SYN/ACK -> ACK
+Name two things that use UDP                                         |  Any two of: DNS queries, DHCP, NTP, streaming, VoIP, gmaing
+A PC shows 169.254.12.4. Whats Wrong?                                |  APIPA: DHCP failed. Check cable/Wi-Fi/DHCP server
+What does DORA stand for?                                            |  Discover, Offer, Request, Acknowledge
+Conver 224 to binary                                                 |  1110 0000
+Is 172.30.5.1 public or private?                                     |  Private (172.16-172.31)
+Network and broadcast for 10.0.0.45/28                               |  Magic 16 -> network 10.0.0.32, broadcast 10.0.0.47
+Which DNS record points to a mail server?                            |  MX
+Which port is RDP, and why is it a risk?                             |  3389. Exposed RDP is a top target for brute force and ransomware
+What's the difference between a hub and a switch?                    |  Hub (L1) repeats to all ports; switch (L2) sens to the riight port by MAC.
