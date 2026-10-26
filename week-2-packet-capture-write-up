@@ -1,0 +1,26 @@
+Week 02 Packet capture write-up
+This week I was practiced capturing and reading my own network traffic with Wireshark to see how a device joins a network and loads a website.
+I used my own home Wi-Fi network ony.
+Tool: Wireshark (Npcap) on Windows 11
+All MAC addresses have been removed from the screenshotts 192.168.x.x addresses are private and cant be reached from the internet
+
+Summary:
+
+#  |  Protocol  |  Wireshark filter      |  Port/Layer    |  Key finding
+1  |  DHCP      |  dhcp                  |  UDP 67/68 - L7|  My router (192.168.100.1) leased my laptop 192.168.100/24 for ~2 days
+2  |  ARP       |  arp                   |  L2 (no ports) |  "Who has ...?" request answered by an "is at" reply carrying the MAC
+3  |  DNS       |  dns                   |  UDP 53 - L7   |  example.com -> 2 IPv4 addresses, answered by my router in ~9 ms
+4  |  TCP       |  tcp.stream eq 60      |  TCP 443 -L4   |  3-way handshake SYN->SYN-ACK->ACK
+5  |  HTTP      |  http                  |  TCP 80 - L7   |  Plain-text request and response headers, fully readable
+6  |  TLS       | tls.handshake.type ==1 |  TCP 443 - L6/7|  Content encrypted, but the site name (SNI) is still visible
+
+                                                                                                  How a web request travels
+
+DHCP (get an IP) -> ARP (find router's MAC) -> DNS (name -> IP) -> TCP (3-way handshake) -> TLS (encrypt) -> HTTP (GET -> 200 OK)
+
+                                                                                                1. DHCP: getting an address:
+COMMANDS: 
+  1. ipconfig /release
+  2. ipconfig /renew
+FILTER: dhcp
+  
