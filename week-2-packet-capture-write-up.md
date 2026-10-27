@@ -1,4 +1,4 @@
-Week 02 Packet capture write-up
+# Week 02 Packet capture write-up
 This week I was practiced capturing and reading my own network traffic with Wireshark to see how a device joins a network and loads a website.
 I used my own home Wi-Fi network ony.
 Tool: Wireshark (Npcap) on Windows 11
@@ -14,11 +14,16 @@ Summary:
 5  |  HTTP      |  http                  |  TCP 80 - L7   |  Plain-text request and response headers, fully readable
 6  |  TLS       | tls.handshake.type ==1 |  TCP 443 - L6/7|  Content encrypted, but the site name (SNI) is still visible
 
-                                                                                                  How a web request travels
+
+## How a web request travels
+
 
 DHCP (get an IP) -> ARP (find router's MAC) -> DNS (name -> IP) -> TCP (3-way handshake) -> TLS (encrypt) -> HTTP (GET -> 200 OK)
 
-                                                                                                1. DHCP: getting an address:
+
+## 1. DHCP: getting an address:
+
+
 COMMANDS: 
   1. ipconfig /release
   2. ipconfig /renew
@@ -41,7 +46,10 @@ ipconfig /all confirmed the result: IPv4 192.168.100.5, mask 255.255.255.0 (/24)
 
 <img width="1916" height="1005" alt="04-ipconfig-all" src="https://github.com/user-attachments/assets/7a77667e-876a-45c0-8fa7-e00ea214a539" />
 
-                                                                                          2. ARP: Finding a MAC addres
+
+## 2. ARP: Finding a MAC addres
+
+
 Commands:
   1. arp -d
   2. arp -a
@@ -61,7 +69,10 @@ The same capture also shows:
   - A Samsung device (192.168.100.7) broadcasting "Who has 192.168.100.1?" every ~2 seconds. I only see it questions, not the router's answers, becuase replies are unicast to the asker.
   - A Ring device (192.168.100.10) sending an ARP Announcement 9gratutious ARP): tellingeveryone its IP and MAC without being asked. Attackers abuse exactly this kind of unasked-for ARP message for ARP spoofing.
 
-                                                                                          3. DNS: turning a name into an IP
+
+## 3. DNS: turning a name into an IP
+
+
 Command:
   1. nslookup example.com
 FILTER: dns
@@ -72,7 +83,10 @@ Packets 60529 -> 60530 show my laptop (192.168.100.5) asking my router (192.168.
 The router ansered with 172.66.147.243 and 104.20.23.154 in about 9ms.
 The matching Transactions ID (0x0002) links the question to its answer, and the TTL of 183 seconds says how long the answer may be cached. nslookup also sent a PTR lookup for the DNS server itself ("No such name", which is noral) and an AAAA query for the IPv6 addresses.
 
-                                                                                          4. TCP: the 3-way handshake
+
+## 4. TCP: the 3-way handshake
+
+
 FILTER: tcp.stream eq 60
 
 <img width="1682" height="1015" alt="03-tcp-synack" src="https://github.com/user-attachments/assets/bb1772f0-da07-4c34-aa6a-64077e3db7db" />
@@ -84,7 +98,9 @@ Packet  |  Direction            |  Flags            |  Meaning
 
 Packets 38364-38366 show a TCP 3-way handshake between my laptop (192.168.100.5) and a Microsoft server (52.110.5.2) on port 443. The flags field proves it: the SYN packet has only the SYN bit set, and the reply has both SYN and ACK set.
 
-                                                                                          5. HTTP: unencrypted web traffic
+
+## 5. HTTP: unencrypted web traffic
+
 
 Site: http://neverssl.com
 FILTER: http -> Follow -> TCP Stream
@@ -101,7 +117,10 @@ Everything is readable: the site, my browser and OS version, my language, and th
 The page body itself looked like gibberish, but that's gzip compression, not encryption.
 Wireshark can decompress it, and so could anyone else on the network. Anyone on the same network could read this.
 
-                                                                                      6. TLS: encrypted web traffic
+
+## 6. TLS: encrypted web traffic
+
+
 Site: https//:neverssl.com
 FILTER: tls.handshake.type == 1
 
@@ -118,7 +137,7 @@ Two surprises:
 
 Why this matters for security?
 
-  1. HTT is readable by anyone on the network, including passwords on old login forms. Alsways use HTTPS.
+  1. HTTP is readable by anyone on the network, including passwords on old login forms. Alsways use HTTPS.
   2. TLS hides the content but not the destination: the SNI and the DNS lookup still reveal which site I visited.
   3. DNS is unencrypted, so lookups can be watched or spoofed (defences: DNS over HTTPS/TLS, DNSSEC).
   4. ARP and DHCP have no authentication. An attacker on the LAN can fake ARP replies (ARP spoofing -> man-in-the-middle) or run a rogue DHCP server that hands out a fake gateway/DNS.
