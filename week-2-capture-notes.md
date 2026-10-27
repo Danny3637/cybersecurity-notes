@@ -1,5 +1,6 @@
-Week 2 Capture Notes
-                                                                                                 1 DNS Lookup
+# Week 2 Capture Notes
+
+## 1 DNS Lookup
 
 Command:
 nslookup example.com
@@ -20,7 +21,7 @@ Security note:
 DNS is unencrypted, so anyone on the network can see which sites I look up. DNS spoofing (fake answers) is possible for the same reason.
 --------------------------------------------------------------------------------------------------------------------------------------------------------
 
-                                                                          2. TCP 3-way handshake + start of TLS
+## 2. TCP 3-way handshake + start of TLS
 
 Filter: tcp.stream eq 60
 Capture: home Wi-Fi, Wireshark
