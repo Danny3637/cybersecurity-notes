@@ -1,4 +1,4 @@
-Week 02 DHCP, DNS & HTTP
+# Week 02 DHCP, DNS & HTTP
 Sources:
   1. Professor Messer N10-009
     1.1 Network Communication
@@ -12,7 +12,8 @@ The big picture: when my laptop joins Wi-Fi and opens a website, these happen in
 DHCP (get an IP address) -> DNS (name -> IP) -> TCP + TLS (connect securely) -> HTTP(S) (request the page)
 
 
-                                                                                    1. Network communication: the 4 ways to send data
+## 1. Network communication: the 4 ways to send data
+
 
 Type      |  Who receives it                                |  Example                                               |  IPv4  |  IPv6  
 Unicast   |  One specific device (one-to-one)               |  Loading a website, email, file transfer               |  YES   |  YES   
@@ -31,7 +32,9 @@ Security Angle
 A broadcast reaches everyone on the LAN, so anyone listening can see it. That's how I saw other devices' ARP requests in Wireshark.
 ----------------------------------------------------------------------------------------------------------------------------------
 
-                                                                                        2. DHCP: Dynamic Host Configuration Protocol
+
+## 2. DHCP: Dynamic Host Configuration Protocol
+
 
 Job: automatically give a device its IP address, subnet mask, default gateway and DNS server, so nobody has to type them in by hand.
 History: BOOTP came first, but it couldnt do everything (e.g. take addresses back when devices left). DHCP replaced it.
@@ -39,7 +42,7 @@ Ports:
   1. UDP 67 = server
   2. UDP 68 = client.
 
-2.1 DORA: how a device gets an address
+### 2.1 DORA: how a device gets an address
 
 Client (no IP yet)                                                                              DHCP server
                                                 1 - Discover
@@ -60,7 +63,7 @@ Client (no IP yet)                                                              
 
 Easy way to remember: D-O-R-A = Don't Own Real Address (yet)
 
-2.2 DHCP relay (DHCP helper)
+### 2.2 DHCP relay (DHCP helper)
 Broadcasts stop at the router, so a DHCP server in another subnet can't hear a Discover.
 Fix: the router acts as a relay.
 
@@ -84,7 +87,7 @@ Client subnet A                                  Router + DHCP relay            
 - The client never knows the server is somewhere else.
 - Lets a company run central or backup DHCP servers for many sites.
 
-2.3 Configuring DHCP
+### 2.3 Configuring DHCP
 
 Setting        |  What it is                                                                                                          |  Example
 Scope          |  The range (pool) of addresses the server can hand out for one subnet                                                |  192.168.1.10 - 192.168.1.200
@@ -115,7 +118,9 @@ DHCP has no authentication. A rogue DHCP server could hand out a fake gateway/DN
 Defence: DHCP snooping on switches.
 -------------------------------------------------------------------------------------------------------------------------
 
-                                                                                        3. DNS records: Domain Name System
+
+##3. DNS records: Domain Name System
+
 
 DNS turns names into IP addresses (UDP/TCP 53). A DNS server's zone/configuration file is made of lines called resource records.
 
@@ -129,7 +134,7 @@ NS        |  Name Server           |  Whcih servers are authoritative for the do
 PTR       |  Pointer               |  Reverse lookup: IP -> name (IP written backwards in in-addr.arpa                                  |  15.23.168.192.in-addr.arpa -> www.example.com
 TXT       |  Text                  |  Free text, used for SPF, DKIM and domain veriication                                              |  v=spf1 include:... -all
 
-3.1 How a CNAME lookup works
+### 3.1 How a CNAME lookup works
 
 My laptop                                                            DNS Server
               A record for 222.example.com?
@@ -150,7 +155,7 @@ Email security records (both live in TXT records)
 - SPF (Sender Policy Framework(: a list of which mail server are allowed to send email for the domain. Receiving server check it to spot spoofed email.
 - DKIM (DomainKeys Identified Mail): a public key used to check the digital signature on outgoing email, providing it really came from the domain and wasn't changed.
 
-3.2 TTL: Time To Live
+### 3.2 TTL: Time To Live
 How long (in seconds) an answer may be cached before asking again. My example.com answer had TTL 183s (~3 min)
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Security angle:
@@ -164,19 +169,20 @@ My network:
 My DNS server is the router 192.168.100.1. In Wireshark: PTR 1.100.168.192.in-addr.arpa -> "No such name" (normal), A example.com -> 2 IPv4 addresses.
 
 
-                                                                            4. HTTP & HTTPS: HyperText Transfer Protocol
+## 4. HTTP & HTTPS: HyperText Transfer Protocol
+
 
 - HTTP = the rules browsers and web servers use to transfer web content (HTML, images, video). Port 80, readable by anyone.
 - HTTPS = HTTP over TLS. Traffic is encrypted, and the certificate proves you're talking to the real server. Port 443
 
-4.1 Anatomy of a URL (Uniform Resource Locator)
+### 4.1 Anatomy of a URL (Uniform Resource Locator)
 
 Anatomy of a URL
  https :// user:pass @ tryhackme.com : 443  /view-room   ?id=1    #task3
 |_____|   |_________| |_____________| |___| |_________| |_____|  |______|
 scheme       user           host      port     path      query   fragment
 
-4.2 Request and Response
+### 4.2 Request and Response
 
 Request and response
 Browser -> Server (Request)
@@ -197,7 +203,7 @@ Set-Cookie: session=abc
 - Request = method + path + version, then headers, then a blank line (+ body for POST/PUT)
 - Response = status line (version + code), headers, blank line, then the body (the page itself)
 
-4.3 HTTP methods
+### 4.3 HTTP methods
 
 Method                  |  Does
 GET                     |  Fetch a page/data
@@ -205,7 +211,7 @@ POST                    |  Send data, create something (login, form)
 PUT                     |  Update existing data
 DELETE                  |  Remove data
 
-4.4 Status codes
+### 4.4 Status codes
 
 Range         |  Meaning                    |  Meaning
 2xxx          |  Success                    |  200 OK; 201 Created
@@ -213,7 +219,7 @@ Range         |  Meaning                    |  Meaning
 4xx client    |  Client error (your fault)  |  400 Bad Request; 401 Unauthorised; 403 Forbidden; 404 Not Found; 405 Method Not Allowed
 5xx           |  Server error (their fault) |  500 Internal Server Error; 503 Service Unavailable
 
-4.5 Headers
+### 4.5 Headers
 
 Request headers                                   |  Responsible headers
 Host: which site                                  |  Server: Store this cookie
@@ -222,7 +228,7 @@ Content-Length: size of data being sent           |  Content-Type: what's being 
 Accept-Encoding: compression the browser supports |  Content-Encoding: compression used (e.g. gzip)
 Cookie: sends saved cookies back                  |  Server: web server software
 
-4.6 Cookies
+### 4.6 Cookies
 - HTTP is stateless: it forgets you between requests. Cookies give it a memory
 - Server sends Set-Cookie -> browser saves it -> browser sends it back in the Cookie header on every request.
 - Used for logins (session tokens), setting and tracking. They usually hold a token, not your password.
