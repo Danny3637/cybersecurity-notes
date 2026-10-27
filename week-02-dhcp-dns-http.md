@@ -171,3 +171,67 @@ My DNS server is the router 192.168.100.1. In Wireshark: PTR 1.100.168.192.in-ad
 
 4.1 Anatomy of a URL (Uniform Resource Locator)
 
+Anatomy of a URL
+ https :// user:pass @ tryhackme.com : 443  /view-room   ?id=1    #task3
+|_____|   |_________| |_____________| |___| |_________| |_____|  |______|
+scheme       user           host      port     path      query   fragment
+
+4.2 Request and Response
+
+Request and response
+Browser -> Server (Request)
+GET /index.html HTTP/1.1
+Host: tryhackme.com
+User-Agent: Firefox
+Cookie: session=abc
+(blank line)
+
+Server -> Browser (Response)
+HTTP/1.1 200 OK
+Server: nginx
+Content-Type: text/html
+Set-Cookie: session=abc
+(blank line)
+<html> ... <html>
+
+- Request = method + path + version, then headers, then a blank line (+ body for POST/PUT)
+- Response = status line (version + code), headers, blank line, then the body (the page itself)
+
+4.3 HTTP methods
+
+Method                  |  Does
+GET                     |  Fetch a page/data
+POST                    |  Send data, create something (login, form)
+PUT                     |  Update existing data
+DELETE                  |  Remove data
+
+4.4 Status codes
+
+Range         |  Meaning                    |  Meaning
+2xxx          |  Success                    |  200 OK; 201 Created
+3xx           |  Redirect                   |  301 Moved Permanently; 302 Found (temporary)
+4xx client    |  Client error (your fault)  |  400 Bad Request; 401 Unauthorised; 403 Forbidden; 404 Not Found; 405 Method Not Allowed
+5xx           |  Server error (their fault) |  500 Internal Server Error; 503 Service Unavailable
+
+4.5 Headers
+
+Request headers                                   |  Responsible headers
+Host: which site                                  |  Server: Store this cookie
+User-Agent: browser + version                     |  Cache-Control: how long to cahce
+Content-Length: size of data being sent           |  Content-Type: what's being returned (HTML, image....)
+Accept-Encoding: compression the browser supports |  Content-Encoding: compression used (e.g. gzip)
+Cookie: sends saved cookies back                  |  Server: web server software
+
+4.6 Cookies
+- HTTP is stateless: it forgets you between requests. Cookies give it a memory
+- Server sends Set-Cookie -> browser saves it -> browser sends it back in the Cookie header on every request.
+- Used for logins (session tokens), setting and tracking. They usually hold a token, not your password.
+- See them: browser Dev Tools (F12) -> Network -> Click a request -> Cookies
+------------------------------------------------------------------------------------------------------------------------
+Security angle:
+Steal someone's session cookie and you can log in as them (session hijacking).
+That's why HTTPS and cookie flags (Secure, HttpOnly) matter.
+------------------------------------------------------------------------------------------------------------------------
+My capture:
+neverssl.com  (HTTP) was readable in Follow TCP Stream; bbc.co.uk (HTTPS) only showed the TLS Client Hello + SNI.
+
