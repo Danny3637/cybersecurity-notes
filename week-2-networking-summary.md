@@ -1,4 +1,4 @@
-Week 2 Networking Lessons Summary
+# Week 2 Networking Lessons Summary
 19-25th Oct 2026:
   - unicast/multicast/anycast/broadcast
   - DHCP
@@ -19,7 +19,7 @@ Thu - 4            |  Capturing your own traffic: DHCP renew, ARP, DNS, TCP hand
 Sat - Lab          |  Packet-capture write-up published to GitHub + knowledge check                                                                                  |  Portfolio/week 2. ProProfs N10-009 + ports quizzes
 
 
-                                                                              Four ways to send data
+## Four ways to send data
 
 
 Every packett is addressed to one, some, the nearest one or all devices.
@@ -40,14 +40,15 @@ That's why you could see your neighbours ARP "Who has...?" requests in Wireshark
 ------------------------------------------------------------------------------------------------------------------------
 
 
-                                                                  DHCP: automatic IP settings (UDP 67/68)
+## DHCP: automatic IP settings (UDP 67/68)
 
 
 Dynamic Host Configuration Protocol hands a device its IP address, subnet mask, default gateway and DNS server for a set time (the lease).
 It replaced the older BOOTP.
 Server = UDP 67, Client = UDP 68
 
-DORA, step by step
+### DORA, step by step
+
 Client no IP                                                         DHCP server
                                   Discover
 ------------------------------------------------------------------------------->
@@ -68,8 +69,8 @@ UDP 67 -> 68 ; "Confirmed it's yours"
 
 Since the client has no IP address yet its ip address is seen as 0.0.0.0 (nobody) -> 255.255.255.255 (this is becasue client doesnt know where the server is yet so it shouts to everyone
 
+### DHCP relay (DHCP helper)
 
-DHCP relay (DHCP helper)
 Client                                Router                                   DHCP server
               Discover
 -------------------------------------->
@@ -86,7 +87,8 @@ Client                                Router                                   D
               Broadcast
 Broadcasts stop at routers, so a router configured as a relay forwards DHCP to a server on another subnet. Lets a company run central/backup DHCP servers.
 
-Configuring a DHCP serrver
+### Configuring a DHCP serrver
+
 Setting                |   Meaning
 Scope                  |  The pool of addresses for one subnet (e.g. .10-.200)
 Exclusion              |  Addresses in the pool never to hand out
@@ -94,13 +96,13 @@ Reservation            |  Same IP always given to one device, matched by its MAC
 Lease time             |  How long a device keeps the address
 Options                |  Extra settings: 3 router, 6 DNS, 51 lease time, 129 VoIP server, 135 HTTP proxy
 
-Leases and renewal timers
+### Leases and renewal timers
 
 8-day lease example. at T2 the client asks any DHCP server (rebinding). At day 8 the address goes back to the pool.
 Day 0                                       Day 4 (T1)                                          Day 7 (T2)        Day 8
 [---- 0-50% --- using the address ---------][---- T1-@-50% --- renew with SAME server ---------][-- T2 -@-87.5% --]
 
-Seen on my network
+### Seen on my network
 ipconfig /all :IP 192.168.100.5
 mask 255.255.255.0 (/24)
 DHCP server, gateway and DNS server all 192.168.100.1 (the router)
@@ -114,7 +116,7 @@ Defence: DHCP snooping  on switches.
 --------------------------------------------------------------------------------------------------------------------------
 
 
-                                                                                DNS records (UDP/TCP 53)
+## DNS records (UDP/TCP 53)
 
 
 A DNS zone file is a list of resource records. Here are 8 to remember:
@@ -143,13 +145,13 @@ Laptop                                                DNS server
 <-----------------------------------------------------------
 CNAME = 2 lookups unless cached
 
-Email security (both are TXT records)
+### Email security (both are TXT records)
 -  SPF (Sender Policy Framework): lost of servers allowed to send maul for the domain, used to spot spoofed email.
 - DKIM (DomainKeys Identified Mail): a public key to check emails digital signature, proving it wasnt faked or changed.
 TTL (Time To Live)
 How many seconds an answer may be cached. Your example.com answer had TTL 183 s.
 
-Seen on my network
+### Seen on my network
 nslookup example.com -> laptop asked the router (192.168.100.1) over UDP 53
 a PTR for the server itself ("No such name" which is normal). an A query -> 172.66.147.243 + 104.20.23.154 in ~9 ms, and an AAAA query -> two 2606:4700:... addresses.
 Matching Transaction ID 0x0002 links question to answer.
@@ -162,7 +164,7 @@ Attackers read MX/TXT/NS records for reconnaissance.
 -----------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-                                                                                    NAT and ICMP
+## NAT and ICMP
 
 
 NAT: Network Address Translation
@@ -175,7 +177,7 @@ My laptop       ---------------------------------------------->  Hoome router   
                           src 192.168.100.5:55825                                                src public-IP: 610012
                   The router remembers the mapping (NAT table), so the reply (bottom arrows) gets sent back to the right laptop.
 
-ICMP: Internet Control Message Protocol
+## ICMP: Internet Control Message Protocol
 Layer 3 "messages about the network". It has no ports.
 Type  |  Message                        |  Used by
 8/0   |  Echo request / echo reply      |  ping
@@ -189,20 +191,22 @@ Other useful protocols
 Security angle
 Many firewalls block ping, so "no reply" ≠ "host is down".
 Attackers use ICMP sweeps to find live hosts and tracert to map a network.
+-------------------------------------------------------------------------------------------------------------------
 
 
-                                                                                    HTTP and HTTPS
+## HTTP and HTTPS
 
 
 HTTP (HyperText Transfer Protocol) transfers web pages: TCP 80, plain text.
 HTTPS = HTTP inside TLS: TCP 443, encrypted, and the certificate proves the server is genuine.
 
-Anatomy of a URL
+### Anatomy of a URL
  https :// user:pass @ tryhackme.com : 443  /view-room   ?id=1    #task3
 |_____|   |_________| |_____________| |___| |_________| |_____|  |______|
 scheme       user           host      port     path      query   fragment
 
-Request and response
+### Request and response
+
 Browser -> Server (Request)
 GET /index.html HTTP/1.1
 Host: tryhackme.com
@@ -236,7 +240,8 @@ User-Agent: browser       |  Content-Type: HTML, image....
 Cookie: saved cookies     |  Set-Cookie: store this
 Accept-Encoding: gzip OK? |  Cache-Control: how long to cache
 
-Cookies
+### Cookies
+
 HTTP is stateless (it forgets you). The server sends Set-Cookie, and the browser send it back in Cookie on every request. 
 Used for logins (session tokens), settings and tracking. See them in Dev Tools (F12) -> Network
 ---------------------------------------------------------------------------------------------------------------------------
@@ -244,7 +249,7 @@ Security angle
 Steal a session cookie and you can log in as that person (session hijacking). That's why HTTPS and the Secure / HttpOnly cookie flags matter.
 
 
-                                                                  TLS: what HTTPS hides (and what it doesn't)
+## TLS: what HTTPS hides (and what it doesn't)
 
 
 Browser                                                                                                      Server
@@ -278,7 +283,7 @@ Packets 38364-38366: TCP handshake laptop -> Microsoft 52.110.5.2:443 (flags 0x0
 Packet 38367: TLS Client Hellop with SNI = officeclient.microsoft.com, then Server Hello, then only "Application Data".
 
 
-                                                                      A web request, end to end
+## A web request, end to end
 
 
 What happens between turning the laptop on and a page appearing:
@@ -301,7 +306,7 @@ Step    |  Protocol  |  OSI layer  |  Port        |  In one sentence
   7     |  NAT       |      3      |  -           |  On every packet out, the router swaps the private source for its public IP
 
 
-                                                                            Wireshark skills
+## Wireshark skills
 
 
 The window
