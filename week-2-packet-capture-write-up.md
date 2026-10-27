@@ -7,7 +7,7 @@ All MAC addresses have been removed from the screenshotts 192.168.x.x addresses 
 Summary:
 
 #  |  Protocol  |  Wireshark filter      |  Port/Layer    |  Key finding
-1  |  DHCP      |  dhcp                  |  UDP 67/68 - L7|  My router (192.168.100.1) leased my laptop 192.168.100/24 for ~2 days
+1  |  DHCP      |  dhcp                  |  UDP 67/68 - L7|  My router (192.168.100.1) leased my laptop 192.168.100.5/24 for ~2 days
 2  |  ARP       |  arp                   |  L2 (no ports) |  "Who has ...?" request answered by an "is at" reply carrying the MAC
 3  |  DNS       |  dns                   |  UDP 53 - L7   |  example.com -> 2 IPv4 addresses, answered by my router in ~9 ms
 4  |  TCP       |  tcp.stream eq 60      |  TCP 443 -L4   |  3-way handshake SYN->SYN-ACK->ACK
@@ -32,13 +32,13 @@ FILTER: dhcp
 <img width="1577" height="352" alt="05-dhcp" src="https://github.com/user-attachments/assets/53f58025-1de4-4d21-8098-6f080a827684" />
 
 Packet 267 is the Release from ipconfig /release: my laptop (192.168.100.5) tells the router it is giving its address back.
-Then packets 362-365 follow DORA, all sharing Transaction ID Oxfa289691:
+Then packets 362-365 follow DORA, all sharing Transaction ID 0xfa289691:
 
 Packet  |  Message    |  Source -> Destination                              |  Meaning
 362     |  Discover   |  0.0.0.0 -> 255.255.255.255                         |  "Is there a DHCP server?" Broadcast, because the laptop has no IP yet
 363     |  Offer      |  192.168.100.1 -> 192.168.100.5                     |  The router offers 192.168.100.5
 364     |  Request    |  0.0.0.0 -> 255.255.255.255                         |  "I'll take it." Still broadcast, so any other DHCP server knows its offer wasn't picked
-365     |  ACK        |  192.1168.100.1 -> 192.168.100.5                    |  Confirmed: the lease starts
+365     |  ACK        |  192.168.100.1 -> 192.168.100.5                     |  Confirmed: the lease starts
 
 The whole exchange took about 0.13 seconds. Client uses UDP 68, server UDP 67.
 
@@ -51,7 +51,7 @@ ipconfig /all confirmed the result: IPv4 192.168.100.5, mask 255.255.255.0 (/24)
 
 
 Commands:
-  1. arp -d
+  1. arp -d *
   2. arp -a
 FILTER: arp
 
@@ -93,7 +93,7 @@ FILTER: tcp.stream eq 60
 
 Packet  |  Direction            |  Flags            |  Meaning
 38364   |  laptop -> server     |  0x002 SYN        |  "Can we talk?"
-38365   |  server -> laptop     |  0x0012 SYN, ACK  |  "Yes, I hear you"
+38365   |  server -> laptop     |  0x012 SYN, ACK  |  "Yes, I hear you"
 38366   |  laptop -> server     |  ACK              |  "Confirmed"
 
 Packets 38364-38366 show a TCP 3-way handshake between my laptop (192.168.100.5) and a Microsoft server (52.110.5.2) on port 443. The flags field proves it: the SYN packet has only the SYN bit set, and the reply has both SYN and ACK set.
@@ -121,7 +121,7 @@ Wireshark can decompress it, and so could anyone else on the network. Anyone on 
 ## 6. TLS: encrypted web traffic
 
 
-Site: https//:neverssl.com
+Site: https://neverssl.com
 FILTER: tls.handshake.type == 1
 
 <img width="1622" height="876" alt="08-tls" src="https://github.com/user-attachments/assets/236ca022-7310-459d-8b3a-c01b1dfcb215" />
