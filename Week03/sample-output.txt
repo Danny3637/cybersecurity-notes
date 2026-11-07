@@ -1,0 +1,28 @@
+=== Hostname ===
+kali
+=== User ===
+kali
+=== Date ===
+Sat Nov  7 01:30:51 PM GMT 2026
+=== Uptime ===
+up 1 hour, 38 minutes
+=== IP addresses ===
+10.0.2.15 10.10.10.1 fd17:625c:f037:2:70f0:82bd:934f:82fb 
+=== Disk usage ===
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda1        79G   16G   59G  22% /
+=== Memory ===
+               total        used        free      shared  buff/cache   available
+Mem:           1.9Gi       829Mi       253Mi        14Mi       1.0Gi       1.1Gi
+Swap:          953Mi          0B       953Mi
+=== Top 5 processes (CPU) ===
+USER         PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root         719  0.9  7.4 440100 149660 tty7    Ssl+ 11:52   0:57 /usr/lib/xorg/Xorg :0 -seat seat0 -auth /var/run/lightdm/root/:0 -nolisten tcp vt7 -novtswitch
+kali        4794  0.3  0.4  12728  9144 pts/0    S    11:58   0:20 zsh
+kali        1889  0.3  3.4 661972 68784 ?        Sl   11:53   0:21 /usr/bin/qterminal
+kali        1097  0.2  0.1 215388  3280 ?        Sl   11:53   0:15 /usr/bin/VBoxClient --draganddrop
+kali        1167  0.2  6.9 1189436 140248 ?      Sl   11:53   0:12 xfwm4
+=== Logged-un users ====
+kali     seat0        2026-11-05 18:36 (:0)
+=== Listening ports ===
+Netid State Recv-Q Send-Q Local Address:Port Peer Address:Port
