@@ -205,7 +205,7 @@
 - When both companies merge you will probably have different domain trees.
 - The union of several trees with different namespaces into the same network is known as a forest.
 
-###Trust Relationships
+### Trust Relationships
 
 - Having multiple domains organised in trees and forests allows you to have a nice compartmentalised network in terms of management and resources. But at a certain point a user might need to access a shared file in one of other companys servers. For this to happen domains arranged in trees and forests are joined otgether by trust relationship.
 - the simplest trust relationship that can be established is a one-way trust relationship.
@@ -214,7 +214,7 @@
 - Two-way trust relationship can also be made to allow both domains to mutually authorise users from the other. By, default joining several domains under a tree or a forest will form a two-way trust relationsip.
 - Having a trust relationship between domains doesn't automatically grant access to all resources on other domains. Once a trust relationship is established, you have the chance to authorise users across different domains, but it's up to you what is actually authorised or not.
 
-##Linking terms to my lab
+## Linking terms to my lab
 | Term | Where you saw it in DC01 |
 |---|---|
 | Domain | lab.local: created with “Add a new forest” |
