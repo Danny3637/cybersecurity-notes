@@ -1,5 +1,21 @@
 #!/usr/sbin/nft -f
 
+# ========================================================================
+# Host firewall for kali VM1 (10.10.10.1)
+# Author Daniils | Week 05 home-lab
+#
+# Policy: default-DENY on input. Nothing gets in unless a rule below explicitly allows it
+#
+# Load:   sudo nft -f ~/myfirewall.nft
+# View:   sudo nft list ruleset
+# Logs:   sudo journalctl -k | grep "DROP:"
+# Wipe:   sudo nft flush ruleset    (panic button)
+#
+# NOTE: these rules are NOT presistent - they vanish on reboot.
+#       Reload with the command above, or install to
+#	/etc/nftables.conf to make them survive a restart.
+# ========================================================================
+
 flush ruleset
 
 table inet filter {
@@ -8,8 +24,15 @@ table inet filter {
 
 		iif "lo" accept
 		ct state established,related accept
-		ip protocol icmp accept
+
+		# allow SSH only from kali2
+		ip saddr 10.10.10.2 tcp dport 22 accept
+
+		# allow IPv6 ping only (IPv6 needs it); IPv6 ping now blocked
 		ip6 nexthdr ipv6-icmp accept
+
+		# log everything that is about to be dropped
+		log prefix "DROP: " level info
 	}
 
 	chain forward {
